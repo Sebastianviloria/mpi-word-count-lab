@@ -1,0 +1,17 @@
+>>> mpi2 PREFETCH=1 warmup (waited 330s, load1=2.48)
+EXECUTION_TIME=1.650335
+>>> mpi2 PREFETCH=2 warmup (waited 0s, load1=2.23)
+EXECUTION_TIME=1.101530
+>>> mpi2 PREFETCH=1 run1 (waited 0s, load1=2.33)
+EXECUTION_TIME=1.246857
+>>> mpi2 PREFETCH=2 run1 (waited 700s, load1=2.41)
+EXECUTION_TIME=1.430896
+>>> mpi2 PREFETCH=1 run2 (waited 0s, load1=1.80)
+EXECUTION_TIME=1.198552
+>>> mpi2 PREFETCH=2 run2 (waited 0s, load1=1.65)
+EXECUTION_TIME=1.090366
+>>> mpi2 PREFETCH=1 run3 (waited 0s, load1=1.54)
+EXECUTION_TIME=1.233324
+>>> mpi2 PREFETCH=2 run3 (waited 0s, load1=2.15)
+EXECUTION_TIME=1.111993
+Done. Now run: python3 analyze.py

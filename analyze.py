@@ -232,6 +232,48 @@ def main():
       f"{diff / summary['mpi2']['T_p_sd']:.1f} x sd(v2); spread ratio v1/v2 = "
       f"{summary['mpi1']['spread_mean'] / summary['mpi2']['spread_mean']:.1f}")
 
+    # LI including the time each process spent waiting for messages (v2 only:
+    # v1 has no message waits inside its counting phase)
+    li_w = [max(x["local_time"] + x["wait_time"] for x in r["procs"]) /
+            st.mean(x["local_time"] + x["wait_time"] for x in r["procs"]) for r in v2]
+    summary["mpi2"]["LI_with_wait_runs"] = li_w
+    summary["mpi2"]["LI_with_wait_mean"] = st.mean(li_w)
+    w(f"- mpi2: LI computed on (t_i + wait_i) = {st.mean(li_w):.3f} "
+      f"(runs: {', '.join(f'{x:.3f}' for x in li_w)})")
+
+    # design check of mpi2 (results/design_variants/, run_design_check.sh)
+    dv = os.path.join(RES, "design_variants")
+    if os.path.isdir(dv):
+        w("\n## MPI v2 design check: PREFETCH (requests in flight per worker)\n")
+        w("| Variant | Runs T_p (s) | Mean T_p (s) | sd (s) | S_p | Mean LI | Mean worker wait (s) | Counts identical |")
+        w("|---|---|---|---|---|---|---|---|")
+        summary["design_variants"] = {}
+        for pf in (1, 2):
+            files = sorted(glob.glob(os.path.join(dv, f"mpi2_prefetch{pf}_run*.log")))
+            if not files:
+                continue
+            ts, lis, waits, ok = [], [], [], True
+            for p in files:
+                text = read(p)
+                ts.append(float(re.search(r"EXECUTION_TIME=([\d.]+)", text).group(1)))
+                procs = [dict(kv.split("=") for kv in m.group(1).split())
+                         for m in re.finditer(r"^PROC (.*)$", text, re.M)]
+                lt = [float(d["local_time"]) for d in procs]
+                lis.append(max(lt) / st.mean(lt))
+                waits.append(st.mean(float(d["wait_time"]) for d in procs if d["role"] == "worker"))
+                ok = ok and "COUNTS_IDENTICAL_TO_BASELINE=yes" in text and parse_top10(text) == ref_top
+            d = {"runs": ts, "T_p": st.mean(ts), "sd": sd(ts), "S_p": t_seq / st.mean(ts),
+                 "LI_mean": st.mean(lis), "worker_wait_mean": st.mean(waits), "correct": ok}
+            summary["design_variants"][f"prefetch{pf}"] = d
+            w(f"| PREFETCH={pf}{' (default)' if pf == 2 else ''} | {', '.join(f'{x:.3f}' for x in ts)} | "
+              f"{d['T_p']:.3f} | {d['sd']:.3f} | {d['S_p']:.2f} | {d['LI_mean']:.3f} | "
+              f"{d['worker_wait_mean']:.3f} | {'yes' if ok else 'NO'} |")
+        dvs = summary["design_variants"]
+        if "prefetch1" in dvs and "prefetch2" in dvs:
+            g = (dvs["prefetch1"]["T_p"] - dvs["prefetch2"]["T_p"]) / dvs["prefetch1"]["T_p"] * 100
+            dvs["prefetch2_vs_1_time_reduction_pct"] = g
+            w(f"\nPREFETCH=2 vs PREFETCH=1: {g:+.1f}% time reduction (S_p uses T_seq = {t_seq:.3f} s).")
+
     # hardware reference: Detectar_procesos_mpi (CPU-bound prime counting)
     det = os.path.join(HERE, "results", "detectar_procesos_mpi.log")
     if os.path.exists(det):

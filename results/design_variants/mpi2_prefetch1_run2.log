@@ -1,0 +1,45 @@
+MPI version 2 (dynamic master-worker), processes: 8, tasks: 750, files per task: 4, prefetch: 1
+Execution time: 1.198552 seconds
+
+Per-process report (rank 0 = master, it also counts words):
+  rank  files  tasks       MB     tokens  local_time_s    wait_s
+     0    400    100    38.10    6228079      1.154186    0.0103
+     1    404    101    34.82    5688547      1.098964    0.0932
+     2    356     89    32.71    5344548      1.088837    0.1029
+     3    404    101    34.85    5697158      1.057892    0.1166
+     4    372     93    35.11    5738470      1.072722    0.1039
+     5    340     85    34.10    5572740      1.100294    0.0872
+     6    360     90    31.58    5160670      1.050794    0.1432
+     7    364     91    33.79    5521246      1.044142    0.1423
+
+Load imbalance LI = max/mean = 1.0653
+Relative spread (max-min)/mean = 0.1016
+
+Files processed: 3000
+Total tokens read: 44951458
+Total occurrences found: 3631778
+
+Top 10 query words in the corpus:
+  a: 785774
+  para: 392156
+  sus: 228913
+  otros: 105530
+  ante: 99832
+  unos: 88794
+  otra: 83901
+  vosotros: 61617
+  mios: 58420
+  tuya: 56635
+PROC rank=0 role=master files=400 tasks=100 bytes=38104509 tokens=6228079 local_time=1.154186 wait_time=0.010331
+PROC rank=1 role=worker files=404 tasks=101 bytes=34816886 tokens=5688547 local_time=1.098964 wait_time=0.093182
+PROC rank=2 role=worker files=356 tasks=89 bytes=32707666 tokens=5344548 local_time=1.088837 wait_time=0.102910
+PROC rank=3 role=worker files=404 tasks=101 bytes=34850812 tokens=5697158 local_time=1.057892 wait_time=0.116553
+PROC rank=4 role=worker files=372 tasks=93 bytes=35108767 tokens=5738470 local_time=1.072722 wait_time=0.103865
+PROC rank=5 role=worker files=340 tasks=85 bytes=34096610 tokens=5572740 local_time=1.100294 wait_time=0.087234
+PROC rank=6 role=worker files=360 tasks=90 bytes=31583665 tokens=5160670 local_time=1.050794 wait_time=0.143237
+PROC rank=7 role=worker files=364 tasks=91 bytes=33785144 tokens=5521246 local_time=1.044142 wait_time=0.142319
+EXECUTION_TIME=1.198552
+THERMAL: Note: No thermal warning level has been recorded Note: No performance warning level has been recorded Note: No CPU power status has been recorded 
+HOST_LOAD1_BEFORE=1.80
+HOST_WAITED_FOR_QUIET_SECONDS=0
+COUNTS_IDENTICAL_TO_BASELINE=yes

@@ -78,11 +78,46 @@
       "inflation": 1.9418867699998823,
       "corr_mb_time": 0.3205368065877667
     },
+    "LI_with_wait_runs": [
+      1.0097295666233597,
+      1.0191435397107058,
+      1.0183553203854907
+    ],
+    "LI_with_wait_mean": 1.0157428089065188,
     "fraction_of_reference_speedup": 0.9397706887592312
   },
   "v2_vs_v1_time_reduction_pct": 8.677260781320477,
   "v2_vs_v1_speedup": 1.095017526363747,
   "top10_all_identical": true,
+  "design_variants": {
+    "prefetch1": {
+      "runs": [
+        1.246857,
+        1.198552,
+        1.233324
+      ],
+      "T_p": 1.2262443333333335,
+      "sd": 0.02491855766960308,
+      "S_p": 3.60005143075075,
+      "LI_mean": 1.082454717552193,
+      "worker_wait_mean": 0.13174228571428573,
+      "correct": true
+    },
+    "prefetch2": {
+      "runs": [
+        1.430896,
+        1.090366,
+        1.111993
+      ],
+      "T_p": 1.211085,
+      "sd": 0.1906687928660587,
+      "S_p": 3.6451138166740296,
+      "LI_mean": 1.0244967644282075,
+      "worker_wait_mean": 0.030805476190476192,
+      "correct": true
+    },
+    "prefetch2_vs_1_time_reduction_pct": 1.2362408470525197
+  },
   "detector": {
     "medians": {
       "1": 3.869,

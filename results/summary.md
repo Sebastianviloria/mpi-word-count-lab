@@ -86,6 +86,16 @@ Full 200-word count comparison (results/correctness.txt):
 - mpi1: imbalance cost = 9.8% of T_p; outside counting = 1.1% of T_p; runs range 1.212-1.253 s
 - mpi2: imbalance cost = 2.2% of T_p; outside counting = 2.3% of T_p; runs range 1.103-1.147 s
 - T_v1 - T_v2 = 0.107 s = 5.0 x sd(v1) = 4.8 x sd(v2); spread ratio v1/v2 = 5.9
+- mpi2: LI computed on (t_i + wait_i) = 1.016 (runs: 1.010, 1.019, 1.018)
+
+## MPI v2 design check: PREFETCH (requests in flight per worker)
+
+| Variant | Runs T_p (s) | Mean T_p (s) | sd (s) | S_p | Mean LI | Mean worker wait (s) | Counts identical |
+|---|---|---|---|---|---|---|---|
+| PREFETCH=1 | 1.247, 1.199, 1.233 | 1.226 | 0.025 | 3.60 | 1.082 | 0.132 | yes |
+| PREFETCH=2 (default) | 1.431, 1.090, 1.112 | 1.211 | 0.191 | 3.65 | 1.024 | 0.031 | yes |
+
+PREFETCH=2 vs PREFETCH=1: +1.2% time reduction (S_p uses T_seq = 4.415 s).
 
 Detectar_procesos_mpi (results/detectar_procesos_mpi.log): recommended P = 8; median time N=1: 3.869 s, N=8: 0.925 s -> CPU-bound reference speedup at P=8: 4.18 (efficiency 0.523).
 - mpi1: S_p / reference speedup = 0.86

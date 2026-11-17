@@ -57,6 +57,7 @@ The generator uses a fixed seed (42), so the dataset is identical on every run.
 | `mpi1.py` | MPI version 1: broadcast plus static distribution |
 | `mpi2.py` | MPI version 2: dynamic master-worker distribution |
 | `run_experiments.sh` | Runs the experimental plan of this report and stores every raw log in `results/` |
+| `run_design_check.sh` | Design check of `mpi2.py`: PREFETCH = 1 versus 2, same protocol, logs in `results/design_variants/` |
 | `analyze.py` | Computes T_seq, T_p, S_p, E_p, LI and spread from `results/` |
 
 **How to run** (from the repository root; on Windows `cmd` use `"%cd%:/app"` instead of `"$(pwd)":/app`):
@@ -126,9 +127,9 @@ The split is balanced in *number of files*, not in *amount of work*: the file si
 
 Design decisions made during development:
 
-- A first version used a **dedicated (idle) master**, which left only 7 counting processes.
-- The master also used to `stat` every file to sort tasks by size. Through the Docker bind mount this added serial time before the first task could be served, so both programs now list files with `os.scandir` and no per-file `stat`.
-- With a working master but **only 1 prefetched request**, workers often waited for the master while it was busy counting a large file. Two requests in flight hide that latency.
+- A first version used a **dedicated (idle) master**, which left only 7 counting processes. Rank 0 now also counts words.
+- The master used to `stat` every file to sort tasks by size. Through the Docker bind mount this added serial time before the first task, so both programs now list files with `os.scandir` (no per-file `stat`).
+- **Requests in flight (`PREFETCH`).** This one was measured with the same protocol (`run_design_check.sh`, logs in `results/design_variants/`). With 1 request in flight, workers waited 0.132 s on average for the master and LI was 1.082. With 2 requests, the wait dropped to 0.031 s and LI to 1.024, so 2 is the default. The mean times (1.226 s versus 1.211 s) are not conclusive because of one slow run (1.431 s), although the other two PREFETCH=2 runs (1.090 s, 1.112 s) were faster than every PREFETCH=1 run.
 
 ## d. Test procedure
 
@@ -136,8 +137,9 @@ Design decisions made during development:
 2. Smoke tests: `mpi1.py` and `mpi2.py` with P = 1 and 8 (P = 2 and 4 through `run_all.sh`); compare the output with the baseline.
 3. Run `bash run_experiments.sh`. It stores the environment and, per run, `results/<program>_<warmup|runK>.log` (full program output, `HOST_WALL_SECONDS`, load average, thermal state), and copies the three result CSVs to `results/`.
 4. Correctness: `run_experiments.sh` compares the full 200-word tables (`results/correctness.txt`), and `analyze.py` checks that the top 10 of every run equals the baseline's top 10.
-5. `python3 analyze.py` produces every table of section 4.
-6. `run_all.sh` was also executed, on a copy of the folder because it deletes `results/`. It completed successfully for NP = 2, 4 and 8, with a correct top 10 for both versions. Its output is kept in `results/run_all_check/`. It runs without pauses or load control, so it is not used for the analysis.
+5. `bash run_design_check.sh` measures the PREFETCH design choice of v2 (section 3.c).
+6. `python3 analyze.py` produces every table of sections 3.c and 4.
+7. `run_all.sh` was also executed, on a copy of the folder because it deletes `results/`. It completed successfully for NP = 2, 4 and 8, with a correct top 10 for both versions. Its output is kept in `results/run_all_check/`. It runs without pauses or load control, so it is not used for the analysis.
 
 ---
 
@@ -230,6 +232,8 @@ Per-process report of MPI v2 (files and MB differ in each run because the assign
 | 6 | 424 | 33.80 | 1.091 | 1.064 | 1.071 | 1.076 | 389.3 | 0.029 |
 | 7 | 356 | 32.91 | 1.082 | 1.077 | 1.062 | 1.074 | 348.0 | 0.038 |
 
+Here t_i is the time spent counting, the same definition as in v1. Waiting for the master is reported separately (column *Mean wait*). If the wait is added to t_i, LI is 1.016, so including it does not change the conclusion.
+
 The number of files per rank now varies (from 348.0 to 397.3 on average), while the local times are nearly equal (mean t_i from 1.058 to 1.084 s).
 The correlation between MB and t_i drops to **0.32**: the work is no longer fixed in advance, so file sizes no longer drive the imbalance.
 
@@ -253,50 +257,36 @@ v2 is **8.7% faster** than v1 (T_v1 / T_v2 = 1.095). The difference (0.107 s) is
 
 ## a. Parallel performance
 
-**Did MPI v1 improve the sequential baseline?** Yes. T_p dropped from 4.415 s to 1.230 s, a speedup of **3.59** with P = 8 (efficiency **0.449**). With v2 the speedup reached **3.93** (efficiency **0.491**).
+**Yes, MPI v1 improved the baseline:** 4.415 s → 1.230 s, **S_p = 3.59**, **E_p = 0.449** (v2: S_p = 3.93, E_p = 0.491). This is far from the ideal S_p = 8, which would mean 0.552 s.
 
-**How close to the ideal S_p = 8?** Not close: about 45–49% of the ideal. The ideal time would be T_seq / 8 = 0.552 s. The time decomposition from `analyze.py` explains the gap:
-
-| Where the time goes | MPI v1 | MPI v2 |
+| Where the time goes (from `analyze.py`) | MPI v1 | MPI v2 |
 |---|---|---|
-| Ideal time T_seq / P (s) | 0.552 | 0.552 |
-| Mean local time per rank, mean t_i (s) | 1.096 | 1.072 |
-| Imbalance cost, max t_i − mean t_i (s) | 0.120 | 0.025 |
-| Outside counting: start-up, bcast, listing, scatter/messages, gather, merge, T_p − max t_i (s) | 0.013 | 0.026 |
+| Outside counting (start-up, bcast, scatter/messages, gather, merge): T_p − max t_i (s) | 0.013 (1.1% of T_p) | 0.026 (2.3% of T_p) |
+| Imbalance: max t_i − mean t_i (s) | 0.120 | 0.025 |
 | Work inflation: Σ t_i / T_seq | 1.99 | 1.94 |
 
-1. **Communication is not the problem.** Everything outside the counting phase costs 0.013 s in v1 (1.1% of T_p) and 0.026 s in v2 (2.3% of T_p). The messages are small: 200 query words, file names and 200-entry counters.
-2. **Imbalance explains a smaller part** of the gap: 0.120 s in v1 (eliminated almost entirely by v2).
-3. **The main cause is that each process works about 2x slower than the single sequential process.** The 8 ranks together spend Σ t_i = 1.99 × T_seq (v1) on the same work. Each rank's t_i is about twice T_seq / 8. Reasons:
-   - The M5 has only **4 performance cores**. With 8 processes, at least 4 of them must run on efficiency cores, which are clearly slower for this kind of code.
-   - All processes share memory bandwidth, the caches and the Docker bind-mounted file system (275 MB are read on every run).
-   - The fanless chip lowers its clock when all cores are busy.
-
-**The detector confirms this hardware ceiling.** On the same container, `Detectar_procesos_mpi` measured a speedup of only **4.18** (efficiency 0.523) at N = 8 for a purely CPU-bound task with no I/O and almost no communication (3.869 s → 0.925 s).
-Our v1 reaches 0.86 of that reference and v2 reaches **0.94** of it. So on this machine the realistic upper bound with 8 processes is about 4x, not 8x, and v2 is close to it.
+**What explains the gap:** communication is negligible and imbalance is a minor part. The main cause is that **every process counts about 2x slower than the sequential program alone** (Σ t_i = 1.99 × T_seq). With 8 processes and only 4 performance cores, at least 4 processes run on efficiency cores. All of them also share memory bandwidth, caches and the Docker file system.
+The `Detectar_procesos_mpi` measurements confirm this ceiling: on the same container a pure CPU-bound task reaches only **4.18** at N = 8 (3.869 s → 0.925 s). v1 reaches 0.86 and v2 **0.94** of that reference.
 
 ## b. Load balance
 
-- **Evidence in v1:** LI = 1.110 (1.137 / 1.088 / 1.103), spread 0.274, and a fixed ordering of the ranks (rank 1 always fastest with 29.37 MB, rank 2 slowest with 37.82 MB). Static assignment by *file count* gives each rank a different *amount of data*. MB and t_i correlate at 0.91, so the imbalance is systematic, not noise. It costs 0.120 s per run on average.
-- **Effect of v2:** LI dropped to **1.024** (1.018 / 1.030 / 1.022) and the spread dropped from 0.274 to **0.046** (5.9x smaller). The imbalance cost dropped from 0.120 s to 0.025 s.
-- **Did it produce a real performance improvement?** Yes, but a moderate one: T_p went from 1.230 s to 1.123 s (**−8.7%**), S_p from 3.59 to 3.93, E_p from 0.449 to 0.491. The gain is consistent (no overlap between the runs of the two versions) and larger than the run-to-run variation (sd ≈ 0.02 s).
-- **Limits of the gain:** balancing can only remove the imbalance part of the gap (0.120 s in v1). v2 also pays for itself: slightly more time outside counting (0.026 s versus 0.013 s), and the workers wait about 0.02–0.04 s each for the master. The much larger loss from per-process slowdown (Σ t_i ≈ 1.94–1.99 × T_seq) is a hardware limit that no distribution strategy can fix.
+- **Evidence in v1:** LI = **1.110** (1.137 / 1.088 / 1.103) and spread 0.274. Each rank gets 375 files but between 29.37 and 37.82 MB, and t_i follows the MB assigned (correlation **0.91**). Rank 1 is always the fastest and rank 2 is the slowest in 2 of 3 runs. The imbalance costs 0.120 s per run.
+- **v2 reduced it:** LI = **1.024**, spread 0.046 (5.9x smaller), correlation with MB 0.32, imbalance cost 0.025 s.
+- **Real improvement? Yes, moderate:** T_p 1.230 → 1.123 s (**−8.7%**). Every v2 run was faster than every v1 run, and the difference (0.107 s) is 5.0 times the sd of v1. Balancing can only recover the 0.120 s of imbalance; the 2x per-process slowdown remains.
 
 ## c. Limitations
 
-| Limitation | Effect on the conclusions |
+| Limitation | How much it weakens the conclusions |
 |---|---|
-| **Docker runs inside a Linux VM on macOS.** The 10 vCPUs are threads of the VM scheduled by macOS, and the dataset is read through a bind mount (virtualized file sharing). | Absolute times are not those of a native Linux node. File-system calls are slower (a per-file `stat` was measurable), and macOS can move vCPUs between core types. This affects absolute values more than the v1 versus v2 comparison, which ran in the same environment. |
-| **Heterogeneous cores (4 performance + 6 efficiency).** Processes are not pinned and their speed depends on where macOS places them. | This is the main reason why E_p is only 0.449–0.491. It also adds noise to individual t_i. It is part of the imbalance v2 corrects, but its exact share cannot be separated from the effect of file size. |
-| **Thermal throttling (fanless MacBook Air).** | Mitigated with 30 s pauses, a warm-up run and interleaved order. `pmset -g therm` recorded no thermal or performance warning in any run. Clock reduction below the warning level cannot be ruled out. |
-| **Background load on the host.** A first campaign (`results/campaign1_background_load/`) ran while macOS daemons (media analysis, Spotlight indexing of the newly generated files, iCloud sync of `~/Documents`) used several cores. In that campaign T_seq = 9.006 s, T_v1 = 2.262 s (S_p 3.98, LI 1.083), T_v2 = 2.282 s (S_p 3.95, LI 1.014): v2 balanced better but was not faster. | The final campaign waited for load average < 2.5 before every run. The baseline then took 4.415 s instead of 9.006 s, so the background load affected even the sequential run. This shows that the absolute speedup depends strongly on the state of the host. Background activity can never be fully excluded on a personal laptop. The top-CPU field stored in the final logs is empty (macOS `top` reports 0% in its first sample; `run_experiments.sh` was fixed afterwards to take two samples), so only the load average documents the state of the host. |
-| **Only 3 valid runs per program.** | Enough to see that the v1/v2 difference (0.107 s) is larger than the variation (sd ≈ 0.02 s), but not enough for confidence intervals or to estimate rare slow runs. |
-| **Small dataset (275 MB, ~4.4 s sequential).** | With T_p ≈ 1.1–1.2 s, fixed costs (Python start-up, file listing, a 30 ms wait) weigh relatively more, and a few tenths of a second change S_p noticeably. A larger corpus would make the measurement of speedup more robust. |
-| **Single P (8) and single machine.** | Required by the lab. It does not show how both strategies scale with P or behave on a multi-node cluster, where communication would cost more. The informal `run_all.sh` execution (NP = 2, 4, 8) was not controlled for load and is not used as evidence. |
-| **Image architecture `arm64/linux`.** | Native on Apple Silicon (no x86 emulation), so there is no emulation overhead. Results are not directly comparable to an `amd64` machine. |
-| **Python 3.8 interpreter.** | Counting is interpreted, CPU-bound Python code. Absolute times would differ with other implementations, but the same code is used in all three programs. |
+| **Docker inside a Linux VM on macOS**, with files read through a bind mount | Absolute times differ from a native Linux node, and file-system calls are slower. Both versions ran in the same environment, so the v1 versus v2 comparison is less affected. |
+| **4 performance + 6 efficiency cores**, processes not pinned | Main cause of E_p = 0.449–0.491. The share of the imbalance caused by core speed cannot be separated from the share caused by file size. |
+| **Fanless MacBook Air (thermal throttling)** | Mitigated with a warm-up run, 30 s pauses and interleaved order. `pmset -g therm` recorded no warnings, but small clock reductions cannot be ruled out. |
+| **Background load on the host** | A first campaign (`results/campaign1_background_load/`) ran while macOS daemons used several cores: T_seq = 9.006 s, T_v1 = 2.262 s (S_p 3.98, LI 1.083), T_v2 = 2.282 s (S_p 3.95, LI 1.014). There v2 balanced better but was not faster. The final campaign waited for load < 2.5, and the slow PREFETCH=2 run in the design check (1.431 s) shows that noise still appears occasionally. The absolute S_p depends on the state of the host. In the final logs only the load average documents that state: the stored top-CPU field is empty, because the first sample of macOS `top` reports 0% (`run_experiments.sh` was then fixed to take two samples). |
+| **3 valid runs per program** | Enough to separate v1 from v2 (difference 0.107 s, sd ≈ 0.02 s), not enough for confidence intervals. |
+| **Small dataset (275 MB)** | With T_p ≈ 1.1–1.2 s, fixed costs weigh more, and a few hundredths of a second change S_p visibly. |
+| **One P (8), one machine, image `arm64/linux`** | Native on Apple Silicon (no emulation). No information on scaling with P, on multi-node clusters or on `amd64`. |
 
-Overall, the conclusions are **well supported** in two respects: the direction of the results (MPI clearly improves on the baseline; v2 balances better and is moderately faster) and the explanation of the gap (per-process slowdown dominates, communication is negligible). The **exact** values of S_p and E_p are specific to this laptop and its background load at measurement time, as campaign 1 shows.
+**Overall:** the direction of the results is solid (MPI is clearly faster; v2 balances better and is moderately faster), and so is the explanation of the gap. The exact S_p and E_p values are specific to this laptop and its state at measurement time.
 
 ---
 

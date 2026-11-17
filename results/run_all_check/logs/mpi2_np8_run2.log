@@ -1,0 +1,41 @@
+MPI version 2 (dynamic master-worker), processes: 8, tasks: 750, files per task: 4, prefetch: 2
+Execution time: 1.136885 seconds
+
+Per-process report (rank 0 = master, it also counts words):
+  rank  files  tasks       MB     tokens  local_time_s    wait_s
+     0    364     91    34.10    5574424      1.062883    0.0382
+     1    392     98    34.39    5621338      1.092548    0.0197
+     2    340     85    33.13    5411912      1.094739    0.0142
+     3    404    101    34.29    5601454      1.058077    0.0331
+     4    368     92    33.56    5483543      1.108148    0.0232
+     5    368     92    35.85    5856879      1.081590    0.0391
+     6    364     91    35.43    5793239      1.077925    0.0305
+     7    400    100    34.31    5608669      1.068037    0.0241
+
+Load imbalance LI = max/mean = 1.0256
+Relative spread (max-min)/mean = 0.0463
+
+Files processed: 3000
+Total tokens read: 44951458
+Total occurrences found: 3631778
+
+Top 10 query words in the corpus:
+  a: 785774
+  para: 392156
+  sus: 228913
+  otros: 105530
+  ante: 99832
+  unos: 88794
+  otra: 83901
+  vosotros: 61617
+  mios: 58420
+  tuya: 56635
+PROC rank=0 role=master files=364 tasks=91 bytes=34101056 tokens=5574424 local_time=1.062883 wait_time=0.038167
+PROC rank=1 role=worker files=392 tasks=98 bytes=34389012 tokens=5621338 local_time=1.092548 wait_time=0.019740
+PROC rank=2 role=worker files=340 tasks=85 bytes=33125713 tokens=5411912 local_time=1.094739 wait_time=0.014195
+PROC rank=3 role=worker files=404 tasks=101 bytes=34285065 tokens=5601454 local_time=1.058077 wait_time=0.033076
+PROC rank=4 role=worker files=368 tasks=92 bytes=33556893 tokens=5483543 local_time=1.108148 wait_time=0.023224
+PROC rank=5 role=worker files=368 tasks=92 bytes=35848066 tokens=5856879 local_time=1.081590 wait_time=0.039144
+PROC rank=6 role=worker files=364 tasks=91 bytes=35433297 tokens=5793239 local_time=1.077925 wait_time=0.030501
+PROC rank=7 role=worker files=400 tasks=100 bytes=34314957 tokens=5608669 local_time=1.068037 wait_time=0.024063
+EXECUTION_TIME=1.136885

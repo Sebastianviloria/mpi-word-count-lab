@@ -1,0 +1,33 @@
+MPI version 2 (dynamic master-worker), processes: 4, tasks: 750, files per task: 4, prefetch: 2
+Execution time: 3.337391 seconds
+
+Per-process report (rank 0 = master, it also counts words):
+  rank  files  tasks       MB     tokens  local_time_s    wait_s
+     0    748    187    68.85   11255976      3.263242    0.0458
+     1    820    205    69.90   11424595      3.223988    0.0958
+     2    720    180    69.14   11295287      3.261094    0.0731
+     3    712    178    67.16   10975600      3.227482    0.0874
+
+Load imbalance LI = max/mean = 1.0059
+Relative spread (max-min)/mean = 0.0121
+
+Files processed: 3000
+Total tokens read: 44951458
+Total occurrences found: 3631778
+
+Top 10 query words in the corpus:
+  a: 785774
+  para: 392156
+  sus: 228913
+  otros: 105530
+  ante: 99832
+  unos: 88794
+  otra: 83901
+  vosotros: 61617
+  mios: 58420
+  tuya: 56635
+PROC rank=0 role=master files=748 tasks=187 bytes=68852480 tokens=11255976 local_time=3.263242 wait_time=0.045750
+PROC rank=1 role=worker files=820 tasks=205 bytes=69898502 tokens=11424595 local_time=3.223988 wait_time=0.095832
+PROC rank=2 role=worker files=720 tasks=180 bytes=69143489 tokens=11295287 local_time=3.261094 wait_time=0.073086
+PROC rank=3 role=worker files=712 tasks=178 bytes=67159588 tokens=10975600 local_time=3.227482 wait_time=0.087450
+EXECUTION_TIME=3.337391

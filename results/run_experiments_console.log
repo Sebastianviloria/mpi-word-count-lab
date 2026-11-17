@@ -1,0 +1,43 @@
+date=2026-11-17T00:42:06Z
+host_cpu=Apple M5
+host_performance_cores=4
+host_efficiency_cores=6
+host_logical_cpus=10
+host_os=27.2
+docker_server=29.8.2
+docker_vm_cpus=10
+docker_vm_mem_bytes=8319504384
+image=augustosalazar/slim-mpi:2
+image_architecture=arm64/linux
+container_nproc=10
+container_python=Python 3.8.20
+container_mpi=mpiexec (OpenRTE) 4.1.4
+container_mpi4py=4.1.1
+P=8 RUNS=3 PAUSE=30 MAX_LOAD=2.5 MAX_WAIT=900 order=interleaved
+>>> baseline warmup (waited 290s, load1=2.38)
+Tiempo de ejecución: 4.698136 segundos HOST_WALL_SECONDS=4.961176 
+>>> mpi1 warmup (waited 0s, load1=2.47)
+EXECUTION_TIME=1.326899 HOST_WALL_SECONDS=1.639191 
+>>> mpi2 warmup (waited 20s, load1=2.43)
+EXECUTION_TIME=1.176392 HOST_WALL_SECONDS=1.476240 
+>>> baseline run1 (waited 0s, load1=2.40)
+Tiempo de ejecución: 4.385800 segundos HOST_WALL_SECONDS=4.588181 
+>>> mpi1 run1 (waited 160s, load1=2.41)
+EXECUTION_TIME=1.253373 HOST_WALL_SECONDS=1.544580 
+>>> mpi2 run1 (waited 0s, load1=2.37)
+EXECUTION_TIME=1.147167 HOST_WALL_SECONDS=1.432117 
+>>> baseline run2 (waited 60s, load1=2.34)
+Tiempo de ejecución: 4.492664 segundos HOST_WALL_SECONDS=4.787525 
+>>> mpi1 run2 (waited 110s, load1=2.49)
+EXECUTION_TIME=1.224091 HOST_WALL_SECONDS=1.555561 
+>>> mpi2 run2 (waited 0s, load1=2.04)
+EXECUTION_TIME=1.118924 HOST_WALL_SECONDS=1.463448 
+>>> baseline run3 (waited 0s, load1=2.03)
+Tiempo de ejecución: 4.365164 segundos HOST_WALL_SECONDS=4.628968 
+>>> mpi1 run3 (waited 10s, load1=2.30)
+EXECUTION_TIME=1.211880 HOST_WALL_SECONDS=1.564018 
+>>> mpi2 run3 (waited 0s, load1=1.91)
+EXECUTION_TIME=1.103119 HOST_WALL_SECONDS=1.391530 
+mpi1 full counts (200 query words) IDENTICAL to baseline
+mpi2 full counts (200 query words) IDENTICAL to baseline
+Done. Now run: python3 analyze.py

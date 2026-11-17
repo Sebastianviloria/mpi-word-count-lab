@@ -1,0 +1,47 @@
+MPI version 1 (static distribution), processes: 8
+Execution time: 1.253373 seconds
+
+Per-process report:
+  rank  files       MB     tokens  local_time_s
+     0    375    36.73    6002531      1.121594
+     1    375    29.37    4801328      0.940591
+     2    375    37.82    6180576      1.243861
+     3    375    36.57    5976248      1.131685
+     4    375    32.32    5281651      1.009267
+     5    375    33.86    5535328      1.028698
+     6    375    33.10    5409609      1.069959
+     7    375    35.28    5764187      1.204110
+
+Load imbalance LI = max/mean = 1.1373
+Relative spread (max-min)/mean = 0.2773
+
+Files processed: 3000
+Total tokens read: 44951458
+Total occurrences found: 3631778
+
+Top 10 query words in the corpus:
+  a: 785774
+  para: 392156
+  sus: 228913
+  otros: 105530
+  ante: 99832
+  unos: 88794
+  otra: 83901
+  vosotros: 61617
+  mios: 58420
+  tuya: 56635
+PROC rank=0 files=375 bytes=36729838 tokens=6002531 local_time=1.121594
+PROC rank=1 files=375 bytes=29365793 tokens=4801328 local_time=0.940591
+PROC rank=2 files=375 bytes=37820796 tokens=6180576 local_time=1.243861
+PROC rank=3 files=375 bytes=36566727 tokens=5976248 local_time=1.131685
+PROC rank=4 files=375 bytes=32323435 tokens=5281651 local_time=1.009267
+PROC rank=5 files=375 bytes=33864681 tokens=5535328 local_time=1.028698
+PROC rank=6 files=375 bytes=33102929 tokens=5409609 local_time=1.069959
+PROC rank=7 files=375 bytes=35279860 tokens=5764187 local_time=1.204110
+EXECUTION_TIME=1.253373
+HOST_WALL_SECONDS=1.544580
+THERMAL: Note: No thermal warning level has been recorded Note: No performance warning level has been recorded Note: No CPU power status has been recorded 
+HOST_LOAD1_BEFORE=2.41
+HOST_LOAD1_AFTER=2.41
+HOST_WAITED_FOR_QUIET_SECONDS=160
+HOST_TOP_CPU_BEFORE: paste 0.0 ;tr 0.0 ;tail 0.0 ;top 0.0 ;bash 0.0 

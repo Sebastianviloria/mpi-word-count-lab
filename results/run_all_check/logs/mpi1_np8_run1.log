@@ -1,0 +1,41 @@
+MPI version 1 (static distribution), processes: 8
+Execution time: 2.152355 seconds
+
+Per-process report:
+  rank  files       MB     tokens  local_time_s
+     0    375    36.73    6002531      2.090920
+     1    375    29.37    4801328      1.709115
+     2    375    37.82    6180576      2.141919
+     3    375    36.57    5976248      2.083896
+     4    375    32.32    5281651      1.877981
+     5    375    33.86    5535328      1.941503
+     6    375    33.10    5409609      1.845110
+     7    375    35.28    5764187      1.999004
+
+Load imbalance LI = max/mean = 1.0922
+Relative spread (max-min)/mean = 0.2207
+
+Files processed: 3000
+Total tokens read: 44951458
+Total occurrences found: 3631778
+
+Top 10 query words in the corpus:
+  a: 785774
+  para: 392156
+  sus: 228913
+  otros: 105530
+  ante: 99832
+  unos: 88794
+  otra: 83901
+  vosotros: 61617
+  mios: 58420
+  tuya: 56635
+PROC rank=0 files=375 bytes=36729838 tokens=6002531 local_time=2.090920
+PROC rank=1 files=375 bytes=29365793 tokens=4801328 local_time=1.709115
+PROC rank=2 files=375 bytes=37820796 tokens=6180576 local_time=2.141919
+PROC rank=3 files=375 bytes=36566727 tokens=5976248 local_time=2.083896
+PROC rank=4 files=375 bytes=32323435 tokens=5281651 local_time=1.877981
+PROC rank=5 files=375 bytes=33864681 tokens=5535328 local_time=1.941503
+PROC rank=6 files=375 bytes=33102929 tokens=5409609 local_time=1.845110
+PROC rank=7 files=375 bytes=35279860 tokens=5764187 local_time=1.999004
+EXECUTION_TIME=2.152355

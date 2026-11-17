@@ -1,0 +1,26 @@
+Tiempo de ejecución: 4.492664 segundos
+
+Dataset procesado: /app/dataset
+Archivo de consulta: consulta.txt
+Archivos procesados: 3000
+Total de tokens leídos: 44951458
+Total de ocurrencias encontradas: 3631778
+Resultados guardados en: /app/dataset/baseline_results.csv
+
+Top 10 palabras de consulta en el corpus:
+  a: 785774
+  para: 392156
+  sus: 228913
+  otros: 105530
+  ante: 99832
+  unos: 88794
+  otra: 83901
+  vosotros: 61617
+  mios: 58420
+  tuya: 56635
+HOST_WALL_SECONDS=4.787525
+THERMAL: Note: No thermal warning level has been recorded Note: No performance warning level has been recorded Note: No CPU power status has been recorded 
+HOST_LOAD1_BEFORE=2.34
+HOST_LOAD1_AFTER=2.39
+HOST_WAITED_FOR_QUIET_SECONDS=60
+HOST_TOP_CPU_BEFORE: paste 0.0 ;tr 0.0 ;tail 0.0 ;top 0.0 ;bash 0.0 

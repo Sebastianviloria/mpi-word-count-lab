@@ -180,6 +180,9 @@ def main():
     gain = (a["T_p"] - b["T_p"]) / a["T_p"] * 100
     summary["v2_vs_v1_time_reduction_pct"] = gain
     summary["v2_vs_v1_speedup"] = a["T_p"] / b["T_p"]
+    wins = sum(r2["time"] < r1["time"] for r1, r2 in zip(v1, v2))
+    summary["v2_rounds_won"] = wins
+    w(f"| Interleaved rounds in which v2 was faster than v1 | - | - | {wins} of {len(v1)} |")
     w(f"\nv2 vs v1: T_v1/T_v2 = {a['T_p'] / b['T_p']:.3f} "
       f"({gain:+.1f}% time reduction; negative means v2 is slower).")
     summary["top10_all_identical"] = top_ok
@@ -273,6 +276,14 @@ def main():
             g = (dvs["prefetch1"]["T_p"] - dvs["prefetch2"]["T_p"]) / dvs["prefetch1"]["T_p"] * 100
             dvs["prefetch2_vs_1_time_reduction_pct"] = g
             w(f"\nPREFETCH=2 vs PREFETCH=1: {g:+.1f}% time reduction (S_p uses T_seq = {t_seq:.3f} s).")
+        if "prefetch2" in dvs:
+            # same mpi2 configuration (PREFETCH=2) measured in two different sessions
+            main_t, dc_t = summary["mpi2"]["T_p"], dvs["prefetch2"]["T_p"]
+            var = (dc_t - main_t) / main_t * 100
+            dvs["cross_session_variation_pct"] = var
+            w(f"Cross-session variation of the same v2 configuration: main campaign {main_t:.3f} s "
+              f"vs design check {dc_t:.3f} s ({var:+.1f}%); LI {summary['mpi2']['LI_mean']:.3f} vs "
+              f"{dvs['prefetch2']['LI_mean']:.3f}.")
 
     # hardware reference: Detectar_procesos_mpi (CPU-bound prime counting)
     det = os.path.join(HERE, "results", "detectar_procesos_mpi.log")

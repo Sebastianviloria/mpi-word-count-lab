@@ -88,6 +88,7 @@
   },
   "v2_vs_v1_time_reduction_pct": 8.677260781320477,
   "v2_vs_v1_speedup": 1.095017526363747,
+  "v2_rounds_won": 3,
   "top10_all_identical": true,
   "design_variants": {
     "prefetch1": {
@@ -116,7 +117,8 @@
       "worker_wait_mean": 0.030805476190476192,
       "correct": true
     },
-    "prefetch2_vs_1_time_reduction_pct": 1.2362408470525197
+    "prefetch2_vs_1_time_reduction_pct": 1.2362408470525197,
+    "cross_session_variation_pct": 7.83700036507074
   },
   "detector": {
     "medians": {

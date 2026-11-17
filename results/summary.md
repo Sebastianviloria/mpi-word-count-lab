@@ -63,6 +63,7 @@ Per-process local time t_i (s), mpi2:
 | Mean LI = max(t_i)/mean(t_i) | - | 1.110 | 1.024 |
 | Mean relative spread | - | 0.274 | 0.046 |
 | Mean host wall time incl. Docker start (s) | 4.668 | 1.555 | 1.429 |
+| Interleaved rounds in which v2 was faster than v1 | - | - | 3 of 3 |
 
 v2 vs v1: T_v1/T_v2 = 1.095 (+8.7% time reduction; negative means v2 is slower).
 
@@ -96,6 +97,7 @@ Full 200-word count comparison (results/correctness.txt):
 | PREFETCH=2 (default) | 1.431, 1.090, 1.112 | 1.211 | 0.191 | 3.65 | 1.024 | 0.031 | yes |
 
 PREFETCH=2 vs PREFETCH=1: +1.2% time reduction (S_p uses T_seq = 4.415 s).
+Cross-session variation of the same v2 configuration: main campaign 1.123 s vs design check 1.211 s (+7.8%); LI 1.024 vs 1.024.
 
 Detectar_procesos_mpi (results/detectar_procesos_mpi.log): recommended P = 8; median time N=1: 3.869 s, N=8: 0.925 s -> CPU-bound reference speedup at P=8: 4.18 (efficiency 0.523).
 - mpi1: S_p / reference speedup = 0.86

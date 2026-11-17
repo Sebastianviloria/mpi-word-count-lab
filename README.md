@@ -272,7 +272,7 @@ The `Detectar_procesos_mpi` measurements confirm this ceiling: on the same conta
 
 - **Evidence in v1:** LI = **1.110** (1.137 / 1.088 / 1.103) and spread 0.274. Each rank gets 375 files but between 29.37 and 37.82 MB, and t_i follows the MB assigned (correlation **0.91**). Rank 1 is always the fastest and rank 2 is the slowest in 2 of 3 runs. The imbalance costs 0.120 s per run.
 - **v2 reduced it:** LI = **1.024**, spread 0.046 (5.9x smaller), correlation with MB 0.32, imbalance cost 0.025 s.
-- **Real improvement? Yes, moderate:** T_p 1.230 → 1.123 s (**−8.7%**). Every v2 run was faster than every v1 run, and the difference (0.107 s) is 5.0 times the sd of v1. Balancing can only recover the 0.120 s of imbalance; the 2x per-process slowdown remains.
+- **Real improvement? Yes, but moderate and reliable only within one session:** T_p 1.230 → 1.123 s (**−8.7%**), and v2 won 3 of 3 interleaved rounds. Between sessions, however, the same v2 configuration varied by +7.8% (see 5.c), a similar magnitude. The robust evidence is the LI reduction (1.110 → 1.024): v2's LI stayed between 1.014 and 1.024 in every session. Balancing can only recover the 0.120 s of imbalance; the 2x per-process slowdown remains.
 
 ## c. Limitations
 
@@ -282,7 +282,8 @@ The `Detectar_procesos_mpi` measurements confirm this ceiling: on the same conta
 | **4 performance + 6 efficiency cores**, processes not pinned | Main cause of E_p = 0.449–0.491. The share of the imbalance caused by core speed cannot be separated from the share caused by file size. |
 | **Fanless MacBook Air (thermal throttling)** | Mitigated with a warm-up run, 30 s pauses and interleaved order. `pmset -g therm` recorded no warnings, but small clock reductions cannot be ruled out. |
 | **Background load on the host** | A first campaign (`results/campaign1_background_load/`) ran while macOS daemons used several cores: T_seq = 9.006 s, T_v1 = 2.262 s (S_p 3.98, LI 1.083), T_v2 = 2.282 s (S_p 3.95, LI 1.014). There v2 balanced better but was not faster. The final campaign waited for load < 2.5, and the slow PREFETCH=2 run in the design check (1.431 s) shows that noise still appears occasionally. The absolute S_p depends on the state of the host. In the final logs only the load average documents that state: the stored top-CPU field is empty, because the first sample of macOS `top` reports 0% (`run_experiments.sh` was then fixed to take two samples). |
-| **3 valid runs per program** | Enough to separate v1 from v2 (difference 0.107 s, sd ≈ 0.02 s), not enough for confidence intervals. |
+| **Variation between sessions** | The same v2 configuration took 1.123 s (main campaign) and 1.211 s (design check), +7.8%, close to the 8.7% gain of v2 over v1. LI was 1.024 in both. Time differences are only reliable within one interleaved session. |
+| **3 valid runs per program** | Enough to separate v1 from v2 within one session (difference 0.107 s, sd ≈ 0.02 s), not enough for confidence intervals. |
 | **Small dataset (275 MB)** | With T_p ≈ 1.1–1.2 s, fixed costs weigh more, and a few hundredths of a second change S_p visibly. |
 | **One P (8), one machine, image `arm64/linux`** | Native on Apple Silicon (no emulation). No information on scaling with P, on multi-node clusters or on `amd64`. |
 
@@ -293,7 +294,9 @@ The `Detectar_procesos_mpi` measurements confirm this ceiling: on the same conta
 # 6. Conclusions
 
 For this problem I recommend the **dynamic master-worker distribution (MPI version 2)**.
-With P = 8 it reduced the load imbalance from LI = 1.110 to **LI = 1.024** (spread from 0.274 to 0.046), and it cut the mean execution time from 1.230 s to **1.123 s** (−8.7%). This raised the speedup over the 4.415 s sequential baseline from 3.59 to **3.93**, and the efficiency from 0.449 to **0.491**, while producing exactly the same top 10 and the same 200 counts as the baseline.
+The recommendation rests mainly on load balance, which was stable: with P = 8, v2 reduced the load imbalance from LI = 1.110 to **LI = 1.024** (spread from 0.274 to 0.046), and its LI stayed between 1.014 and 1.024 in every measurement session.
+In the interleaved campaign it also cut the mean execution time from 1.230 s to **1.123 s** (−8.7%, faster in 3 of 3 rounds). This raised the speedup over the 4.415 s sequential baseline from 3.59 to **3.93**, and the efficiency from 0.449 to **0.491**, while producing exactly the same top 10 and the same 200 counts as the baseline.
+That time gain is reliable only as a comparison within the same session: the same v2 configuration varied by 7.8% between sessions, a magnitude similar to the gain itself.
 The static split is simpler but blind to the 49.9x variation in file size and to the different core speeds: its local times followed the megabytes assigned (correlation 0.91), and everyone waited for the slowest rank.
 The dynamic scheme adapts to both, with time outside the counting phase of only 2.3% of the runtime.
 Its benefit is bounded, however: the remaining distance to the ideal speedup of 8 comes from the hardware (4 performance and 6 efficiency cores, shared memory and file system inside a Docker VM), which limits even a pure CPU-bound task to a speedup of 4.18 on this machine. v2 already reaches 0.94 of that limit.
